@@ -1,31 +1,63 @@
-//
-//  DailyFocusView.swift
-//  FocusFlow
-//
-//  Created by Ayça Kaycalı on 16.05.2026.
-//
-
 import SwiftUI
+import SwiftData
 
 struct DailyFocusView: View {
+    @State private var viewModel = DailyFocusViewModel()
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \FocusTask.priority) private var tasks: [FocusTask]
+   
+    
+
     var body: some View {
-        ZStack {
-            AppTheme.Colors.background
-                .ignoresSafeArea()
-            
-            VStack (alignment:.leading,spacing: AppTheme.Spacing.md ){
-                Text("Daily Focus")
-                    .font(.largeTitle.weight(.semibold))
-                    .foregroundStyle(AppTheme.Colors.primaryText)
-                
-                Text("Today’s top focus tasks will appear here.")
-                    .font(.body)
-                    .foregroundStyle(AppTheme.Colors.secondaryText)
+        List {
+            Section {
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                    Text("Daily Focus")
+                        .font(.largeTitle.weight(.semibold))
+                        .foregroundStyle(AppTheme.Colors.primaryText)
+
+                    Text("Top 3 today — nothing more.")
+                        .font(.subheadline)
+                        .foregroundStyle(AppTheme.Colors.secondaryText)
+                }
+                .padding(.top, AppTheme.Spacing.lg)
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+
+                ForEach(viewModel.topTasks(from: tasks)) { task in
+                    TaskCardView(task: task)
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .swipeActions(edge: .trailing) {
+                            Button("Done") {
+                                viewModel.markDone(task, context: modelContext)
+                            }
+                            .tint(.green)
+                        }
+                        .swipeActions(edge: .leading) {
+                            Button("Defer") {
+                                viewModel.deferTask(task, context: modelContext)
+                            }
+                            .tint(.orange)
+                        }
+                }
             }
-            .padding(AppTheme.Spacing.xxl)
+        }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(AppTheme.Colors.background)
+        .onAppear {
+            if tasks.isEmpty {
+                MockSprintFactory.makeTasks().forEach { task in
+                    modelContext.insert(task)
+                }
+
+                try? modelContext.save()
+            }
         }
     }
 }
+
 #Preview {
     DailyFocusView()
 }

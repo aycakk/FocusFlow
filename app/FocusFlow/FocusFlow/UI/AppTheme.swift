@@ -3,20 +3,17 @@ import SwiftUI
 enum AppTheme {
 
     enum Colors {
-        static let background = Color(hex: "#F7F8FA")
-        static let cardBackground = Color(hex: "#FFFFFF")
-        static let surfaceMuted = Color(hex: "#F1F3F6")
+        static let background = Color("AppBackground")
+        static let cardBackground = Color("CardBackground")
+        static let accent = Color("Accent")
+        static let accentSoft = Color("AccentSoft")
+        static let primaryText = Color("PrimaryText")
+        static let secondaryText = Color("SecondaryText")
+        static let tertiaryText = Color("TertiaryText")
 
-        static let primaryText = Color(hex: "#0E1116")
-        static let secondaryText = Color(hex: "#525866")
-        static let tertiaryText = Color(hex: "#858C99")
-
-        static let accent = Color(hex: "#2A6FDB")
-        static let accentSoft = Color(hex: "#E8EFFB")
-
-        static let success = Color(hex: "#2E8F66")
-        static let warning = Color(hex: "#B8780C")
-        static let danger = Color(hex: "#D04A3B")
+        static let success = Color("Success")
+        static let warning = Color(hex: "Warning")
+        static let danger = Color(hex: "Danger")
     }
 
     enum Spacing {
