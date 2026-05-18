@@ -21,11 +21,27 @@ struct DailyFocusView: View {
                         .foregroundStyle(AppTheme.Colors.secondaryText)
                 }
                 .padding(.top, AppTheme.Spacing.lg)
+                .listRowInsets(
+                    EdgeInsets(
+                        top: AppTheme.Spacing.xxl,
+                        leading: AppTheme.Spacing.xl,
+                        bottom: AppTheme.Spacing.md,
+                        trailing: AppTheme.Spacing.xl
+                    )
+                )
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
 
                 ForEach(viewModel.topTasks(from: tasks)) { task in
                     TaskCardView(task: task)
+                        .listRowInsets(
+                            EdgeInsets(
+                                top: AppTheme.Spacing.sm,
+                                leading: AppTheme.Spacing.xl,
+                                bottom: AppTheme.Spacing.sm,
+                                trailing: AppTheme.Spacing.xl
+                            )
+                        )
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
                         .swipeActions(edge: .trailing) {
