@@ -3,6 +3,8 @@ import SwiftData
 
 struct PersistenceController {
     static let shared = PersistenceController()
+    
+    
 
     let container: ModelContainer
 
@@ -10,9 +12,9 @@ struct PersistenceController {
         do {
             let schema = Schema([
                 Goal.self,
-                Sprint.self,
-                FocusTask.self,
-                DailySnapshot.self
+                TaskItem.self,
+                DailyFocus.self,
+                UserPreferences.self
             ])
 
             let configuration = ModelConfiguration(
