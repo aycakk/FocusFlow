@@ -6,34 +6,57 @@ enum AppTheme {
     enum Colors {
 
         // Backgrounds
-        static let background       = Color(hex: "#F5F3EF") // porcelain
-        static let backgroundSoft   = Color(hex: "#EDE9E3") // porcelain2
-        static let backgroundMuted  = Color(hex: "#E4DFD8") // porcelain3
+        static let background       = Color(hex: "#F7F8FA") // light grey-white
+        static let backgroundSoft   = Color(hex: "#EDE9E3") // warm tint (kept for future use)
+        static let backgroundMuted  = Color(hex: "#E4DFD8") // warm tint 2
         static let cardBackground   = Color(hex: "#FFFFFF")
+        static let surfaceMuted     = Color(hex: "#F1F3F6") // tracks, hairline fills
 
-        // Accent — cobalt
-        static let accent           = Color(hex: "#3B5BDB") // cobalt
-        static let accentStrong     = Color(hex: "#4C6EF5") // cobalt2
-        static let accentSoft       = Color(hex: "#EBF0FF") // cobalt-soft
-        static let accentMid        = Color(hex: "#C5D0FF") // cobalt-mid
+        // Accent — cobalt blue
+        static let accent           = Color(hex: "#2A6FDB")
+        static let accentStrong     = Color(hex: "#1B57C2") // darker cobalt
+        static let accentSoft       = Color(hex: "#E8EFFB") // tinted fill
+        static let accentMid        = Color(hex: "#C5D0FF") // mid tint (kept)
 
-        // Text — slate scale
-        static let primaryText      = Color(hex: "#3A3935") // slate
-        static let secondaryText    = Color(hex: "#6B6860") // slate2
-        static let tertiaryText     = Color(hex: "#9A9890") // slate3
-        static let quaternaryText   = Color(hex: "#C2BFB8") // slate4
+        // Text scale
+        static let primaryText      = Color(hex: "#0E1116")
+        static let secondaryText    = Color(hex: "#525866")
+        static let tertiaryText     = Color(hex: "#858C99")
+        static let quaternaryText   = Color(hex: "#C2BFB8") // kept for future
 
         // Semantic
-        static let success          = Color(hex: "#2F9E6B")
-        static let successSoft      = Color(hex: "#EAFAF2")
-        static let warning          = Color(hex: "#C17F24")
-        static let warningSoft      = Color(hex: "#FFF3DC")
-        static let danger           = Color(hex: "#C0394B")
+        static let success          = Color(hex: "#2E8F66")
+        static let successSoft      = Color(hex: "#E4F2EC")
+        static let warning          = Color(hex: "#B8780C")
+        static let warningSoft      = Color(hex: "#FBF1DC")
+        static let danger           = Color(hex: "#D04A3B")
         static let dangerSoft       = Color(hex: "#FDEDF0")
 
-        // Borders
-        static let border           = Color(hex: "#3A3935").opacity(0.08)
-        static let borderStrong     = Color(hex: "#3A3935").opacity(0.14)
+        // Borders — base is primaryText (#0E1116)
+        static let border           = Color(hex: "#0E1116").opacity(0.08)
+        static let borderStrong     = Color(hex: "#0E1116").opacity(0.12)
+    }
+
+    // MARK: - Typography
+    enum Typography {
+        static let display  = Font.system(size: 40, weight: .regular)
+        static let titleL   = Font.system(size: 34, weight: .regular)
+        static let titleM   = Font.system(size: 28, weight: .medium)
+        static let headline = Font.system(size: 19, weight: .medium)
+        static let body     = Font.system(size: 15, weight: .regular)
+        static let caption  = Font.system(size: 13, weight: .medium)
+        static let eyebrow  = Font.system(size: 11, weight: .bold)
+
+        /// Letter-spacing values — apply with .tracking(AppTheme.Typography.Tracking.titleL)
+        enum Tracking {
+            static let display:  CGFloat = -0.8
+            static let titleL:   CGFloat = -0.6
+            static let titleM:   CGFloat = -0.5
+            static let headline: CGFloat = -0.25
+            static let body:     CGFloat =  0.0
+            static let caption:  CGFloat =  0.1
+            static let eyebrow:  CGFloat =  1.4
+        }
     }
 
     // MARK: - Spacing
@@ -53,7 +76,7 @@ enum AppTheme {
         static let sm:   CGFloat = 8
         static let md:   CGFloat = 12
         static let lg:   CGFloat = 16
-        static let xl:   CGFloat = 20
+        static let xl:   CGFloat = 22   // UI Kit geometry: radius.xl = 22px
         static let xxl:  CGFloat = 28
         static let pill: CGFloat = 999
     }
