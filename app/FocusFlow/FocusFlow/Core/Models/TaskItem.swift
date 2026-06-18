@@ -13,7 +13,8 @@ final class TaskItem {
     var priority: Int            // 0 = unset, 1–3 for goal tasks (AI-assigned)
     var isInTodayFocus: Bool
     var estimatedMinutes: Int?
-    var source: TaskSource       // .user | .aiGenerated
+    var source: TaskSource
+    var theme: String?           // grouping label for AI-planned goal tasks    // .user | .aiGenerated
 
     // Inverse relationship to Goal (optional — tasks can be free-floating)
     var goal: Goal?
@@ -26,7 +27,8 @@ final class TaskItem {
         priority: Int = 0,
         isInTodayFocus: Bool = false,
         estimatedMinutes: Int? = nil,
-        source: TaskSource = .user
+        source: TaskSource = .user,
+        theme: String? = nil
     ) {
         self.id = UUID()
         self.title = title
@@ -39,6 +41,7 @@ final class TaskItem {
         self.isInTodayFocus = isInTodayFocus
         self.estimatedMinutes = estimatedMinutes
         self.source = source
+        self.theme = theme
     }
 }
 

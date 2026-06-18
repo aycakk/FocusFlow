@@ -2,12 +2,26 @@ import SwiftUI
 
 struct GoalCreationView: View {
 
+    let onFinished: () -> Void   // closes the creation sheet when planning is confirmed
+
     @State private var goalText = ""
     @State private var selectedDuration = "2 Weeks"
     @State private var selectedFocusDuration = "60 min"
+    @State private var showPlanning = false
+
+    @State private var goalsViewModel = GoalsViewModel()
 
     private let durations = ["1 Week", "2 Weeks", "1 Month"]
     private let focusDurations = ["30 min", "60 min", "90 min"]
+
+    // "60 min" -> 60
+    private var dailyMinutes: Int {
+        Int(selectedFocusDuration.replacingOccurrences(of: " min", with: "")) ?? 60
+    }
+
+    private var targetDate: Date? {
+        goalsViewModel.targetDate(forDurationLabel: selectedDuration)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xxl) {
@@ -49,10 +63,7 @@ struct GoalCreationView: View {
             Spacer()
 
             Button {
-                // Sprint 3: persist goal + trigger AI planning flow
-                print("Goal:", goalText)
-                print("Duration:", selectedDuration)
-                print("Focus:", selectedFocusDuration)
+                showPlanning = true
             } label: {
                 Text("Start Planning")
                     .font(.headline.weight(.semibold))
@@ -74,6 +85,14 @@ struct GoalCreationView: View {
         .background(AppTheme.Colors.background)
         .navigationTitle("New Goal")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(isPresented: $showPlanning) {
+            GoalPlanningView(
+                goalTitle: goalText,
+                dailyMinutes: dailyMinutes,
+                targetDate: targetDate,
+                onFinished: onFinished
+            )
+        }
     }
 }
 
@@ -113,5 +132,7 @@ private struct OptionRow: View {
 }
 
 #Preview {
-    GoalCreationView()
+    NavigationStack {
+        GoalCreationView(onFinished: {})
+    }
 }
