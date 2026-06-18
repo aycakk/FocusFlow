@@ -47,7 +47,7 @@ struct OnboardingView: View {
                 Spacer()
 
                 NavigationLink {
-                    GoalCreationView()
+                    GoalCreationView(onFinished: {})
                 } label: {
                     Text("Start Planning")
                         .font(.headline.weight(.semibold))
