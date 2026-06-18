@@ -13,7 +13,7 @@ struct GoalPlanningView: View {
     @State private var goalsViewModel = GoalsViewModel()
 
     // Swap this for OllamaService in Sprint 4 — nothing else changes.
-    private let ai: AIService = MockAIService()
+    private let ai: AIService = OllamaService()
 
     // MARK: - Flow Phases
 
