@@ -34,6 +34,8 @@ final class TodayViewModel {
     /// Marks a task as completed and removes it from today's focus.
     /// The task stays in the database — it just leaves the Today screen.
     func completeTask(_ task: TaskItem, context: ModelContext) {
+        task.previousStatus = task.status
+        task.previousInTodayFocus = task.isInTodayFocus
         task.status = .done
         task.completedAt = Date()
         task.isInTodayFocus = false

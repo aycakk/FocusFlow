@@ -14,7 +14,10 @@ final class TaskItem {
     var isInTodayFocus: Bool
     var estimatedMinutes: Int?
     var source: TaskSource
-    var theme: String?           // grouping label for AI-planned goal tasks    // .user | .aiGenerated
+    var theme: String?
+    var previousStatus: TaskStatus?   // remembers status before completion, for restore
+    var previousInTodayFocus: Bool = false   // remembers Today focus before completion
+    var sortOrder: Int = 0   // manual drag-to-reorder position within a section
 
     // Inverse relationship to Goal (optional — tasks can be free-floating)
     var goal: Goal?

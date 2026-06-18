@@ -117,16 +117,22 @@ struct GoalDetailView: View {
                 .foregroundStyle(AppTheme.Colors.tertiaryText)
 
             ForEach(completedTasks) { task in
-                HStack(spacing: AppTheme.Spacing.md) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(AppTheme.Colors.success)
-                    Text(task.title)
-                        .font(AppTheme.Typography.body)
-                        .foregroundStyle(AppTheme.Colors.tertiaryText)
-                        .strikethrough(true, color: AppTheme.Colors.tertiaryText)
-                    Spacer(minLength: 0)
+                Button {
+                    withAnimation { viewModel.toggleTaskCompletion(task, context: context) }
+                } label: {
+                    HStack(spacing: AppTheme.Spacing.md) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(AppTheme.Colors.success)
+                        Text(task.title)
+                            .font(AppTheme.Typography.body)
+                            .foregroundStyle(AppTheme.Colors.tertiaryText)
+                            .strikethrough(true, color: AppTheme.Colors.tertiaryText)
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.vertical, AppTheme.Spacing.xs)
+                    .contentShape(Rectangle())
                 }
-                .padding(.vertical, AppTheme.Spacing.xs)
+                .buttonStyle(.plain)
             }
         }
     }
