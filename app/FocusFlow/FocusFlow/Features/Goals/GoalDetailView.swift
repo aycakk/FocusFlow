@@ -42,7 +42,8 @@ struct GoalDetailView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
             Text(goal.title)
-                .font(.system(size: 30, weight: .regular, design: .serif))
+                .font(.system(size: 30, weight: .semibold))
+                .tracking(-0.4)
                 .foregroundStyle(AppTheme.Colors.primaryText)
 
             if let intention = goal.intention, !intention.isEmpty {

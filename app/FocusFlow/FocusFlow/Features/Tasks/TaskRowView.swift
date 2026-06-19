@@ -47,7 +47,7 @@ struct TaskRowView: View {
 
     private var taskContent: some View {
         Text(task.title)
-            .font(AppTheme.Typography.body)
+            .font(.system(size: 16, weight: .regular))
             .foregroundStyle(task.status == .done ? AppTheme.Colors.tertiaryText : AppTheme.Colors.primaryText)
             .strikethrough(task.status == .done, color: AppTheme.Colors.tertiaryText)
             .lineLimit(2)
@@ -57,19 +57,29 @@ struct TaskRowView: View {
 
     @ViewBuilder
     private var metaBadge: some View {
-        if let date = task.scheduledDate, task.status == .scheduled {
-            Text(date.formatted(.dateTime.month(.abbreviated).day()))
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(AppTheme.Colors.warning)
-                .padding(.horizontal, AppTheme.Spacing.sm)
-                .padding(.vertical, 4)
-                .background(AppTheme.Colors.warningSoft)
-                .clipShape(Capsule())
+        if task.isInTodayFocus {
+            badge("TODAY", bg: AppTheme.Colors.accentSoft, fg: AppTheme.Colors.accent)
+        } else if task.status == .scheduled, let date = task.scheduledDate {
+            badge(date.formatted(.dateTime.weekday(.abbreviated)).uppercased(),
+                  bg: AppTheme.Colors.warningSoft, fg: AppTheme.Colors.warning)
+        } else if task.status == .someday || task.status == .deferred {
+            badge("SOMEDAY", bg: AppTheme.Colors.surfaceMuted, fg: AppTheme.Colors.secondaryText)
         } else if let minutes = task.estimatedMinutes {
             Text("\(minutes) min")
                 .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(AppTheme.Colors.tertiaryText)
         }
+    }
+
+    private func badge(_ text: String, bg: Color, fg: Color) -> some View {
+        Text(text)
+            .font(.system(size: 11, weight: .semibold))
+            .tracking(0.3)
+            .foregroundStyle(fg)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(bg)
+            .clipShape(Capsule())
     }
 }
 

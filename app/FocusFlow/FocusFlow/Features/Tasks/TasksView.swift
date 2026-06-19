@@ -87,6 +87,7 @@ struct TasksView: View {
                         onSelect: { selectedTask = task }
                     )
                     .listRowBackground(AppTheme.Colors.cardBackground)
+                    .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 12, trailing: 20))
                     .swipeActions(edge: .leading) {
                         Button {
                             viewModel.completeTask(task, context: context)
@@ -126,6 +127,7 @@ struct TasksView: View {
                         onSelect: { selectedTask = task }
                     )
                     .listRowBackground(AppTheme.Colors.cardBackground)
+                    .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 12, trailing: 20))
                     .swipeActions(edge: .trailing) {
                         Button {
                             viewModel.uncompleteTask(task, context: context)

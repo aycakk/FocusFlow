@@ -51,12 +51,16 @@ struct FocusCardView: View {
             // Left column: label + title + meta
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
 
-                // "FOCUS 1" — small amber label
-                /*Text("Focus \(index)")
-                    .font(.system(size: 10.5, weight: .semibold))
-                    .kerning(0.8)
-                    .textCase(.uppercase)
-                    .foregroundStyle(AppTheme.Colors.warning)*/
+                // "FOCUS 1" — small amber label (hidden once done, like the UI Kit)
+                if task.status != .done {
+                    Text("Focus \(index)")
+                        .font(.system(size: 10.5, weight: .semibold))
+                        .kerning(0.8)
+                        .textCase(.uppercase)
+                        .foregroundStyle(AppTheme.Colors.warning)
+                        .opacity(0.85)
+                        .padding(.bottom, 2)
+                }
 
                 // Task title
                 Text(task.title)
@@ -103,21 +107,27 @@ struct FocusCardView: View {
         HStack(spacing: AppTheme.Spacing.sm) {
             // Small colored dot
             Circle()
-                .fill(AppTheme.Colors.accent.opacity(0.5))
+                .fill(metaColor)
                 .frame(width: 6, height: 6)
 
-            // Label text
-            if let minutes = task.estimatedMinutes {
-                Text("Inbox · \(minutes) min")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(AppTheme.Colors.secondaryText)
-            } else {
-                Text("Inbox")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(AppTheme.Colors.secondaryText)
-            }
+            // Category (goal name) or fallback
+            Text(metaText)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(AppTheme.Colors.secondaryText)
         }
         .padding(.top, AppTheme.Spacing.xs)
+    }
+
+    /// Dot color — accent when the task belongs to a goal, muted otherwise.
+    private var metaColor: Color {
+        task.goal != nil ? AppTheme.Colors.accent : AppTheme.Colors.tertiaryText
+    }
+
+    /// Shows the goal name as a category (UI Kit style), else the estimate.
+    private var metaText: String {
+        if let goalTitle = task.goal?.title { return goalTitle }
+        if let minutes = task.estimatedMinutes { return "\(minutes) min" }
+        return "Inbox"
     }
 
     // MARK: - Checkbox Button (Tap to Complete)
