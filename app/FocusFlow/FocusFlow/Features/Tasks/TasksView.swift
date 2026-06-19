@@ -8,56 +8,47 @@ struct TasksView: View {
 
     @Query private var allTasks: [TaskItem]
 
-    // Sheet state
     @State private var selectedTask: TaskItem? = nil
-
-    // QuickAddBar state
     @State private var newTaskText = ""
 
-    // MARK: - Computed Properties
+    // MARK: - Filters (sorted by manual sortOrder)
 
     private var inboxTasks: [TaskItem] {
-        allTasks.filter { $0.status == .inbox }
+        allTasks.filter { $0.status == .inbox }.sorted { $0.sortOrder < $1.sortOrder }
     }
-
     private var scheduledTasks: [TaskItem] {
-        allTasks
-            .filter { $0.status == .scheduled }
-            .sorted { ($0.scheduledDate ?? .distantFuture) < ($1.scheduledDate ?? .distantFuture) }
+        allTasks.filter { $0.status == .scheduled }.sorted { $0.sortOrder < $1.sortOrder }
     }
-
     private var somedayTasks: [TaskItem] {
         allTasks.filter { $0.status == .someday || $0.status == .deferred }
+            .sorted { $0.sortOrder < $1.sortOrder }
+    }
+    private var completedTasks: [TaskItem] {
+        allTasks.filter { $0.status == .done }
+            .sorted { ($0.completedAt ?? .distantPast) > ($1.completedAt ?? .distantPast) }
     }
 
     // MARK: - Body
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            AppTheme.Colors.background.ignoresSafeArea()
-
-            // Scrollable content
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    headerSection
-                    sectionBlock(title: "Inbox",     tasks: inboxTasks)
-                    sectionBlock(title: "Scheduled", tasks: scheduledTasks)
-                    sectionBlock(title: "Someday",   tasks: somedayTasks)
-
-                    // Bottom padding — clearance for QuickAddBar + tab bar
-                    Spacer().frame(height: 140)
-                }
+        VStack(spacing: 0) {
+            headerSection
                 .padding(.horizontal, AppTheme.Spacing.xxl)
-            }
 
-            // QuickAddBar pinned above tab bar
-            VStack(spacing: 0) {
-                QuickAddBar(text: $newTaskText) {
-                    viewModel.addTask(title: newTaskText, context: context)
-                    newTaskText = ""
-                }
-                // White fill behind tab bar
-                AppTheme.Colors.cardBackground.frame(height: 83)
+            List {
+                reorderableSection("Inbox", inboxTasks)
+                reorderableSection("Scheduled", scheduledTasks)
+                reorderableSection("Someday", somedayTasks)
+                completedSection
+            }
+            .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+        }
+        .background(AppTheme.Colors.background)
+        .safeAreaInset(edge: .bottom) {
+            QuickAddBar(text: $newTaskText) {
+                viewModel.addTask(title: newTaskText, context: context)
+                newTaskText = ""
             }
         }
         .sheet(item: $selectedTask) { task in
@@ -75,67 +66,88 @@ struct TasksView: View {
                 .foregroundStyle(AppTheme.Colors.primaryText)
                 .padding(.top, AppTheme.Spacing.xxxl)
 
-            Text(viewModel.taskCountSummary(
-                inbox: inboxTasks.count,
-                scheduled: scheduledTasks.count
-            ))
-            .font(AppTheme.Typography.caption)
-            .foregroundStyle(AppTheme.Colors.secondaryText)
+            Text(viewModel.taskCountSummary(inbox: inboxTasks.count, scheduled: scheduledTasks.count))
+                .font(AppTheme.Typography.caption)
+                .foregroundStyle(AppTheme.Colors.secondaryText)
         }
-        .padding(.bottom, AppTheme.Spacing.xxxl)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.bottom, AppTheme.Spacing.lg)
     }
 
-    // MARK: - Section Block
+    // MARK: - Reorderable Section (Inbox / Scheduled / Someday)
 
     @ViewBuilder
-    private func sectionBlock(title: String, tasks: [TaskItem]) -> some View {
+    private func reorderableSection(_ title: String, _ tasks: [TaskItem]) -> some View {
         if !tasks.isEmpty {
-            VStack(alignment: .leading, spacing: 0) {
-
-                // Section eyebrow label
-                Text(title.uppercased())
-                    .font(AppTheme.Typography.eyebrow)
-                    .tracking(AppTheme.Typography.Tracking.eyebrow)
-                    .foregroundStyle(AppTheme.Colors.tertiaryText)
-                    .padding(.bottom, AppTheme.Spacing.sm)
-
-                // Card containing all rows
-                VStack(spacing: 0) {
-                    ForEach(tasks) { task in
-                        TaskRowView(
-                            task: task,
-                            onComplete: {
-                                withAnimation(.easeOut(duration: 0.2)) {
-                                    viewModel.completeTask(task, context: context)
-                                }
-                            },
-                            onDefer: {
-                                withAnimation(.easeOut(duration: 0.2)) {
-                                    viewModel.deferTask(task, context: context)
-                                }
-                            },
-                            onSelect: { selectedTask = task }
-                        )
-                        if task.id != tasks.last?.id {
-                            Divider()
-                                .padding(.leading, AppTheme.Spacing.xl + 22)
+            Section {
+                ForEach(tasks) { task in
+                    TaskRowView(
+                        task: task,
+                        onComplete: { viewModel.completeTask(task, context: context) },
+                        onSelect: { selectedTask = task }
+                    )
+                    .listRowBackground(AppTheme.Colors.cardBackground)
+                    .swipeActions(edge: .leading) {
+                        Button {
+                            viewModel.completeTask(task, context: context)
+                        } label: {
+                            Label("Done", systemImage: "checkmark")
                         }
+                        .tint(AppTheme.Colors.success)
+                    }
+                    .swipeActions(edge: .trailing) {
+                        Button {
+                            viewModel.deferTask(task, context: context)
+                        } label: {
+                            Label("Someday", systemImage: "archivebox")
+                        }
+                        .tint(AppTheme.Colors.warning)
                     }
                 }
-                .background(AppTheme.Colors.cardBackground)
-                .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.xl, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: AppTheme.Radius.xl, style: .continuous)
-                        .stroke(AppTheme.Colors.border, lineWidth: 0.5)
-                )
-                .shadow(color: .black.opacity(0.03), radius: 4, x: 0, y: 2)
+                .onMove { from, to in
+                    viewModel.move(tasks, from: from, to: to, context: context)
+                }
+            } header: {
+                sectionHeader(title)
             }
-            .padding(.bottom, AppTheme.Spacing.xxxl)
         }
     }
-}
 
-// MARK: - Previews
+    // MARK: - Completed Section
+
+    @ViewBuilder
+    private var completedSection: some View {
+        if !completedTasks.isEmpty {
+            Section {
+                ForEach(completedTasks) { task in
+                    TaskRowView(
+                        task: task,
+                        onComplete: { viewModel.uncompleteTask(task, context: context) },
+                        onSelect: { selectedTask = task }
+                    )
+                    .listRowBackground(AppTheme.Colors.cardBackground)
+                    .swipeActions(edge: .trailing) {
+                        Button {
+                            viewModel.uncompleteTask(task, context: context)
+                        } label: {
+                            Label("Restore", systemImage: "arrow.uturn.backward")
+                        }
+                        .tint(AppTheme.Colors.accent)
+                    }
+                }
+            } header: {
+                sectionHeader("Completed")
+            }
+        }
+    }
+
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title.uppercased())
+            .font(AppTheme.Typography.eyebrow)
+            .tracking(AppTheme.Typography.Tracking.eyebrow)
+            .foregroundStyle(AppTheme.Colors.tertiaryText)
+    }
+}
 
 #Preview("With tasks") {
     let container = PersistenceController.preview.container

@@ -57,6 +57,13 @@ struct MockAIService: AIService {
             PlanTask(title: "Reflect on what's working and adjust", theme: "Staying steady", estimatedMinutes: 20, priority: 3)
         ]
     }
+    
+    func insightNote(completedToday: Int, totalToday: Int) async -> String {
+        await fakeThinking()
+        if totalToday == 0 { return "Nothing in focus yet. A calm start is enough." }
+        if completedToday >= totalToday { return "Today's focus is complete. The rest can wait." }
+        return "Keeping a small focus is enough for today."
+    }
 
     // MARK: - Helpers
 
