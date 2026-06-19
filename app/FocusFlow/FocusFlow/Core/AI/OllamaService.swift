@@ -44,6 +44,18 @@ struct OllamaService: AIService {
             )
         }
     }
+    
+    func insightNote(completedToday: Int, totalToday: Int) async -> String {
+        do {
+            let response: InsightResponse = try await post(
+                "/insight-note",
+                body: InsightRequest(completedToday: completedToday, totalToday: totalToday)
+            )
+            return response.note
+        } catch {
+            return await fallback.insightNote(completedToday: completedToday, totalToday: totalToday)
+        }
+    }
 
     // MARK: - Networking
 
@@ -100,4 +112,12 @@ private struct PlanTaskDTO: Decodable {
     let theme: String
     let estimatedMinutes: Int
     let priority: Int
+}
+private struct InsightRequest: Encodable {
+    let completedToday: Int
+    let totalToday: Int
+}
+
+private struct InsightResponse: Decodable {
+    let note: String
 }

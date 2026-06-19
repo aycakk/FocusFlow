@@ -38,4 +38,7 @@ protocol AIService {
         answers: [String: String],
         dailyMinutes: Int
     ) async -> [PlanTask]
+    
+    /// One short, calm observation for the Today screen.
+    func insightNote(completedToday: Int, totalToday: Int) async -> String
 }
