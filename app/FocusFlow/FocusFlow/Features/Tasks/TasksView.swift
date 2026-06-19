@@ -10,17 +10,24 @@ struct TasksView: View {
 
     @State private var selectedTask: TaskItem? = nil
     @State private var newTaskText = ""
+    @State private var showCompleted = false
 
     // MARK: - Filters (sorted by manual sortOrder)
 
+    // Manual buckets exclude goal tasks (those live in their own section).
     private var inboxTasks: [TaskItem] {
-        allTasks.filter { $0.status == .inbox }.sorted { $0.sortOrder < $1.sortOrder }
+        allTasks.filter { $0.status == .inbox && $0.goal == nil }.sorted { $0.sortOrder < $1.sortOrder }
     }
     private var scheduledTasks: [TaskItem] {
-        allTasks.filter { $0.status == .scheduled }.sorted { $0.sortOrder < $1.sortOrder }
+        allTasks.filter { $0.status == .scheduled && $0.goal == nil }.sorted { $0.sortOrder < $1.sortOrder }
     }
     private var somedayTasks: [TaskItem] {
-        allTasks.filter { $0.status == .someday || $0.status == .deferred }
+        allTasks.filter { ($0.status == .someday || $0.status == .deferred) && $0.goal == nil }
+            .sorted { $0.sortOrder < $1.sortOrder }
+    }
+    /// Active tasks that belong to a goal — kept in their own section.
+    private var goalTasks: [TaskItem] {
+        allTasks.filter { $0.goal != nil && $0.status != .done }
             .sorted { $0.sortOrder < $1.sortOrder }
     }
     private var completedTasks: [TaskItem] {
@@ -39,9 +46,11 @@ struct TasksView: View {
                 reorderableSection("Inbox", inboxTasks)
                 reorderableSection("Scheduled", scheduledTasks)
                 reorderableSection("Someday", somedayTasks)
+                reorderableSection("From Goals", goalTasks)
                 completedSection
             }
             .listStyle(.insetGrouped)
+            .listSectionSpacing(16)
             .scrollContentBackground(.hidden)
         }
         .background(AppTheme.Colors.background)
@@ -116,29 +125,47 @@ struct TasksView: View {
 
     // MARK: - Completed Section
 
+    // Collapsible — keeps the list short. Collapsed by default.
     @ViewBuilder
     private var completedSection: some View {
         if !completedTasks.isEmpty {
             Section {
-                ForEach(completedTasks) { task in
-                    TaskRowView(
-                        task: task,
-                        onComplete: { viewModel.uncompleteTask(task, context: context) },
-                        onSelect: { selectedTask = task }
-                    )
-                    .listRowBackground(AppTheme.Colors.cardBackground)
-                    .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 12, trailing: 20))
-                    .swipeActions(edge: .trailing) {
-                        Button {
-                            viewModel.uncompleteTask(task, context: context)
-                        } label: {
-                            Label("Restore", systemImage: "arrow.uturn.backward")
+                if showCompleted {
+                    ForEach(completedTasks) { task in
+                        TaskRowView(
+                            task: task,
+                            onComplete: { viewModel.uncompleteTask(task, context: context) },
+                            onSelect: { selectedTask = task }
+                        )
+                        .listRowBackground(AppTheme.Colors.cardBackground)
+                        .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 12, trailing: 20))
+                        .swipeActions(edge: .trailing) {
+                            Button {
+                                viewModel.uncompleteTask(task, context: context)
+                            } label: {
+                                Label("Restore", systemImage: "arrow.uturn.backward")
+                            }
+                            .tint(AppTheme.Colors.accent)
                         }
-                        .tint(AppTheme.Colors.accent)
                     }
                 }
             } header: {
-                sectionHeader("Completed")
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) { showCompleted.toggle() }
+                } label: {
+                    HStack(spacing: 6) {
+                        sectionHeader("Completed")
+                        Text("\(completedTasks.count)")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(AppTheme.Colors.tertiaryText)
+                        Spacer()
+                        Image(systemName: showCompleted ? "chevron.down" : "chevron.right")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(AppTheme.Colors.tertiaryText)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
         }
     }

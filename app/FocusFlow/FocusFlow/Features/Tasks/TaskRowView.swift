@@ -55,15 +55,14 @@ struct TaskRowView: View {
 
     // MARK: - Meta badge (date or time estimate)
 
+    // Only show a badge when it adds information the section header doesn't.
     @ViewBuilder
     private var metaBadge: some View {
-        if task.isInTodayFocus {
+        if task.isInTodayFocus && task.status != .done {
             badge("TODAY", bg: AppTheme.Colors.accentSoft, fg: AppTheme.Colors.accent)
         } else if task.status == .scheduled, let date = task.scheduledDate {
             badge(date.formatted(.dateTime.weekday(.abbreviated)).uppercased(),
                   bg: AppTheme.Colors.warningSoft, fg: AppTheme.Colors.warning)
-        } else if task.status == .someday || task.status == .deferred {
-            badge("SOMEDAY", bg: AppTheme.Colors.surfaceMuted, fg: AppTheme.Colors.secondaryText)
         } else if let minutes = task.estimatedMinutes {
             Text("\(minutes) min")
                 .font(.system(size: 11, weight: .medium))

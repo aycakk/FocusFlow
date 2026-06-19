@@ -27,7 +27,7 @@ final class GoalsViewModel {
         context.insert(goal)
 
         // Turn each draft PlanTask into a persisted TaskItem linked to the goal.
-        for plan in planTasks {
+        for (index, plan) in planTasks.enumerated() {
             let task = TaskItem(
                 title: plan.title,
                 status: .someday,        // plan tasks wait in Someday until scheduled/focused
@@ -37,6 +37,7 @@ final class GoalsViewModel {
                 theme: plan.theme
             )
             task.goal = goal
+            task.sortOrder = index       // keep the AI plan's order stable
             context.insert(task)
         }
 
