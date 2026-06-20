@@ -60,7 +60,6 @@ final class GoalsViewModel {
         } else {
             task.status = .done
             task.completedAt = Date()
-            task.isInTodayFocus = false
         }
         try? context.save()
     }

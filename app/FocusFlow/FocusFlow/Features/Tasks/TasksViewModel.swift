@@ -7,7 +7,7 @@ import Observation
 @Observable
 final class TasksViewModel {
 
-    func taskCountSummary(inbox: Int, scheduled: Int) -> String {
+    func taskCountSummary(inbox: Int, scheduled: Int) -> LocalizedStringKey {
         let open = inbox + scheduled
         guard open > 0 else { return "No open tasks" }
         if scheduled == 0 { return "\(open) in inbox" }
@@ -44,19 +44,16 @@ final class TasksViewModel {
 
     func completeTask(_ task: TaskItem, context: ModelContext) {
         task.previousStatus = task.status
-        task.previousInTodayFocus = task.isInTodayFocus
         task.status = .done
         task.completedAt = Date()
-        task.isInTodayFocus = false
+        // Keep isInTodayFocus so it still counts in Today's "done" total.
         try? context.save()
         Haptics.success()
     }
     
     func uncompleteTask(_ task: TaskItem, context: ModelContext) {
         task.status = task.previousStatus ?? .inbox
-        task.isInTodayFocus = task.previousInTodayFocus   // back to Today if it was
         task.previousStatus = nil
-        task.previousInTodayFocus = false
         task.completedAt = nil
         try? context.save()
         Haptics.soft()

@@ -7,6 +7,8 @@ struct TaskRowView: View {
     let onComplete: () -> Void
     let onSelect: () -> Void
 
+    @Environment(\.locale) private var locale
+
     var body: some View {
         HStack(alignment: .center, spacing: AppTheme.Spacing.md) {
             checkboxButton
@@ -59,9 +61,9 @@ struct TaskRowView: View {
     @ViewBuilder
     private var metaBadge: some View {
         if task.isInTodayFocus && task.status != .done {
-            badge("TODAY", bg: AppTheme.Colors.accentSoft, fg: AppTheme.Colors.accent)
+            badge(Text("TODAY"), bg: AppTheme.Colors.accentSoft, fg: AppTheme.Colors.accent)
         } else if task.status == .scheduled, let date = task.scheduledDate {
-            badge(date.formatted(.dateTime.weekday(.abbreviated)).uppercased(),
+            badge(Text(date.formatted(.dateTime.weekday(.abbreviated).locale(locale)).uppercased()),
                   bg: AppTheme.Colors.warningSoft, fg: AppTheme.Colors.warning)
         } else if let minutes = task.estimatedMinutes {
             Text("\(minutes) min")
@@ -70,8 +72,8 @@ struct TaskRowView: View {
         }
     }
 
-    private func badge(_ text: String, bg: Color, fg: Color) -> some View {
-        Text(text)
+    private func badge(_ text: Text, bg: Color, fg: Color) -> some View {
+        text
             .font(.system(size: 11, weight: .semibold))
             .tracking(0.3)
             .foregroundStyle(fg)

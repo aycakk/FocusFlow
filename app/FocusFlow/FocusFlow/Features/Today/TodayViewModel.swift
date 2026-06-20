@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 import SwiftData
 import Observation
 
@@ -22,11 +23,10 @@ final class TodayViewModel {
     // MARK: - Summary Text
 
     /// Returns a summary like "3 focuses · 1 done" or "All done for today"
-    func summary(total: Int, done: Int) -> String {
+    func summary(total: Int, done: Int) -> LocalizedStringKey {
         guard total > 0 else { return "Nothing in focus today" }
         if done >= total { return "All done for today" }
-        let remaining = total - done
-        return "\(remaining) \(remaining == 1 ? "focus" : "focuses") remaining · \(done) done"
+        return "\(total - done) remaining · \(done) done"
     }
 
     // MARK: - Task Actions
@@ -35,10 +35,11 @@ final class TodayViewModel {
     /// The task stays in the database — it just leaves the Today screen.
     func completeTask(_ task: TaskItem, context: ModelContext) {
         task.previousStatus = task.status
-        task.previousInTodayFocus = task.isInTodayFocus
         task.status = .done
         task.completedAt = Date()
-        task.isInTodayFocus = false
+        // Keep it in today's focus so it counts as "done" and the
+        // "all done" state can trigger — the status filter hides it
+        // from the active cards.
         try? context.save()
         Haptics.success()
     }

@@ -109,7 +109,7 @@ struct TasksView: View {
     // MARK: - Reorderable Section (Inbox / Scheduled / Someday)
 
     @ViewBuilder
-    private func reorderableSection(_ title: String, _ tasks: [TaskItem]) -> some View {
+    private func reorderableSection(_ title: LocalizedStringKey, _ tasks: [TaskItem]) -> some View {
         if !tasks.isEmpty {
             Section {
                 ForEach(tasks) { task in
@@ -203,8 +203,9 @@ struct TasksView: View {
         }
     }
 
-    private func sectionHeader(_ title: String) -> some View {
-        Text(title.uppercased())
+    private func sectionHeader(_ title: LocalizedStringKey) -> some View {
+        Text(title)
+            .textCase(.uppercase)
             .font(AppTheme.Typography.eyebrow)
             .tracking(AppTheme.Typography.Tracking.eyebrow)
             .foregroundStyle(AppTheme.Colors.tertiaryText)

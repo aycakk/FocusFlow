@@ -7,24 +7,79 @@
 
 import SwiftUI
 
-struct SettingsView: View {
-    var body: some View {
-            ZStack {
-                AppTheme.Colors.background
-                    .ignoresSafeArea()
+enum AppAppearance: String, CaseIterable, Identifiable {
+    case system, light, dark
+    var id: String { rawValue }
 
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                    Text("Settings")
-                        .font(.largeTitle.weight(.semibold))
-                        .foregroundStyle(AppTheme.Colors.primaryText)
-
-                    Text("App preferences and local AI settings will appear here.")
-                        .font(.body)
-                        .foregroundStyle(AppTheme.Colors.secondaryText)
-                }
-                .padding(AppTheme.Spacing.xxl)
-            }
+    var label: String {
+        switch self {
+        case .system: return "System"
+        case .light:  return "Light"
+        case .dark:   return "Dark"
         }
+    }
+
+    /// nil = follow the system; otherwise force light/dark.
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system: return nil
+        case .light:  return .light
+        case .dark:   return .dark
+        }
+    }
+}
+enum AppLanguage: String, CaseIterable, Identifiable {
+    case system, en, tr
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .system: return "System"
+        case .en:     return "English"
+        case .tr:     return "Türkçe"
+        }
+    }
+
+    /// nil = follow the device language; otherwise force this locale.
+    var locale: Locale? {
+        switch self {
+        case .system: return nil
+        case .en:     return Locale(identifier: "en")
+        case .tr:     return Locale(identifier: "tr")
+        }
+    }
+}
+
+struct SettingsView: View {
+    @AppStorage("appearance") private var appearance: AppAppearance = .system
+    @AppStorage("appLanguage") private var language: AppLanguage = .system
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section("Appearance") {
+                    Picker("Theme", selection: $appearance) {
+                        ForEach(AppAppearance.allCases) { option in
+                            Text(option.label).tag(option)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+                
+                Section("Language") {
+                    Picker("Language", selection: $language) {
+                        ForEach(AppLanguage.allCases) { option in
+                            Text(option.label).tag(option)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+            }
+            .scrollContentBackground(.hidden)
+            .background(AppTheme.Colors.background)
+            .navigationTitle("Settings")
+        }
+    }
 }
 
 #Preview {
