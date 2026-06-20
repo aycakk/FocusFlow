@@ -40,6 +40,7 @@ final class TodayViewModel {
         task.completedAt = Date()
         task.isInTodayFocus = false
         try? context.save()
+        Haptics.success()
     }
 
     /// Defers a task — it stays in the system but leaves today's focus.
@@ -48,6 +49,7 @@ final class TodayViewModel {
         task.status = .deferred
         task.isInTodayFocus = false
         try? context.save()
+        Haptics.light()
     }
 
     // MARK: - AI Insight Note

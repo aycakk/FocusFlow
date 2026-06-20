@@ -22,7 +22,7 @@ struct OnboardingView: View {
 
                     VStack(spacing: AppTheme.Spacing.sm) {
 
-                        Text("One goal.\nOne sprint at a time.")
+                        Text("One goal.\nOne day at a time.")
                             .font(.largeTitle.weight(.semibold))
                             .multilineTextAlignment(.center)
                             .foregroundStyle(AppTheme.Colors.primaryText)
@@ -36,11 +36,11 @@ struct OnboardingView: View {
 
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
 
-                    FeatureRow(text: "AI-guided sprint planning")
+                    FeatureRow(text: "Calm AI planning")
 
-                    FeatureRow(text: "Calm daily focus")
+                    FeatureRow(text: "A focused day, not a backlog")
 
-                    FeatureRow(text: "Offline-first productivity")
+                    FeatureRow(text: "Works fully offline")
                 }
                 .padding(.horizontal, AppTheme.Spacing.xxl)
 

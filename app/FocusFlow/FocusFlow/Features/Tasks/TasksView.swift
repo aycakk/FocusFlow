@@ -42,16 +42,20 @@ struct TasksView: View {
             headerSection
                 .padding(.horizontal, AppTheme.Spacing.xxl)
 
-            List {
-                reorderableSection("Inbox", inboxTasks)
-                reorderableSection("Scheduled", scheduledTasks)
-                reorderableSection("Someday", somedayTasks)
-                reorderableSection("From Goals", goalTasks)
-                completedSection
+            if allTasks.isEmpty {
+                emptyState
+            } else {
+                List {
+                    reorderableSection("Inbox", inboxTasks)
+                    reorderableSection("Scheduled", scheduledTasks)
+                    reorderableSection("Someday", somedayTasks)
+                    reorderableSection("From Goals", goalTasks)
+                    completedSection
+                }
+                .listStyle(.insetGrouped)
+                .listSectionSpacing(16)
+                .scrollContentBackground(.hidden)
             }
-            .listStyle(.insetGrouped)
-            .listSectionSpacing(16)
-            .scrollContentBackground(.hidden)
         }
         .background(AppTheme.Colors.background)
         .safeAreaInset(edge: .bottom) {
@@ -83,6 +87,25 @@ struct TasksView: View {
         .padding(.bottom, AppTheme.Spacing.lg)
     }
 
+    // MARK: - Empty State
+
+    private var emptyState: some View {
+        VStack(spacing: AppTheme.Spacing.md) {
+            Spacer()
+            Image(systemName: "checklist")
+                .font(.system(size: 44, weight: .light))
+                .foregroundStyle(AppTheme.Colors.tertiaryText)
+            Text("No tasks yet")
+                .font(AppTheme.Typography.headline)
+                .foregroundStyle(AppTheme.Colors.primaryText)
+            Text("Add your first task below.")
+                .font(AppTheme.Typography.body)
+                .foregroundStyle(AppTheme.Colors.secondaryText)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
+    }
+
     // MARK: - Reorderable Section (Inbox / Scheduled / Someday)
 
     @ViewBuilder
@@ -106,6 +129,11 @@ struct TasksView: View {
                         .tint(AppTheme.Colors.success)
                     }
                     .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            viewModel.deleteTask(task, context: context)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
                         Button {
                             viewModel.deferTask(task, context: context)
                         } label: {
@@ -140,6 +168,11 @@ struct TasksView: View {
                         .listRowBackground(AppTheme.Colors.cardBackground)
                         .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 12, trailing: 20))
                         .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                viewModel.deleteTask(task, context: context)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
                             Button {
                                 viewModel.uncompleteTask(task, context: context)
                             } label: {

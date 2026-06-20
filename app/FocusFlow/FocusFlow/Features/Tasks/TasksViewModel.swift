@@ -39,6 +39,7 @@ final class TasksViewModel {
             task.sortOrder = index
         }
         try? context.save()
+        Haptics.light()
     }
 
     func completeTask(_ task: TaskItem, context: ModelContext) {
@@ -48,6 +49,7 @@ final class TasksViewModel {
         task.completedAt = Date()
         task.isInTodayFocus = false
         try? context.save()
+        Haptics.success()
     }
     
     func uncompleteTask(_ task: TaskItem, context: ModelContext) {
@@ -57,12 +59,14 @@ final class TasksViewModel {
         task.previousInTodayFocus = false
         task.completedAt = nil
         try? context.save()
+        Haptics.soft()
     }
     
     func deferTask(_ task: TaskItem, context: ModelContext) {
         task.status = .someday
         task.isInTodayFocus = false
         try? context.save()
+        Haptics.light()
     }
 
     func addToTodayFocus(_ task: TaskItem, context: ModelContext) {
@@ -74,5 +78,6 @@ final class TasksViewModel {
         task.isInTodayFocus = false
         context.delete(task)
         try? context.save()
+        Haptics.light()
     }
 }
