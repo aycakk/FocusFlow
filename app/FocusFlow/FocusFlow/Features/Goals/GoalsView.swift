@@ -98,38 +98,87 @@ private struct GoalCard: View {
     let goal: Goal
     let progress: Double
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+    private var pct: Int { Int((progress * 100).rounded()) }
 
-            Text(goal.title)
-                .font(.system(size: 22, weight: .regular, design: .serif))
-                .foregroundStyle(AppTheme.Colors.primaryText)
-                .lineLimit(2)
-
-            // Calm progress bar — no percentage number shown.
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule()
-                        .fill(AppTheme.Colors.surfaceMuted)
-                    Capsule()
-                        .fill(AppTheme.Colors.accent)
-                        .frame(width: max(0, geo.size.width * progress))
-                }
-            }
-            .frame(height: 6)
-
-            Text("\(goal.tasks.count) steps")
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(AppTheme.Colors.tertiaryText)
+    /// Status badge + matching bar/percent color, UI Kit style.
+    private var status: (text: String, bg: Color, fg: Color) {
+        if goal.status == .completed {
+            return ("DONE", AppTheme.Colors.successSoft, AppTheme.Colors.success)
+        } else if progress < 0.15 {
+            return ("EARLY", AppTheme.Colors.accentSoft, AppTheme.Colors.accent)
+        } else {
+            return ("ACTIVE", AppTheme.Colors.successSoft, AppTheme.Colors.success)
         }
-        .padding(AppTheme.Spacing.xl)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+
+            // Title + step count + status badge
+            HStack(alignment: .top, spacing: AppTheme.Spacing.md) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(goal.title)
+                        .font(.system(size: 19, weight: .medium))
+                        .tracking(-0.25)
+                        .foregroundStyle(AppTheme.Colors.primaryText)
+                        .lineLimit(2)
+
+                    Text("\(goal.tasks.count) steps")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(AppTheme.Colors.secondaryText)
+                }
+
+                Spacer(minLength: 0)
+
+                Text(status.text)
+                    .font(.system(size: 11, weight: .semibold))
+                    .tracking(0.3)
+                    .foregroundStyle(status.fg)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(status.bg)
+                    .clipShape(Capsule())
+                    .padding(.top, 2)
+            }
+
+            // Progress label + percentage + bar
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("PROGRESS")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.4)
+                        .foregroundStyle(AppTheme.Colors.tertiaryText)
+                    Spacer()
+                    Text("\(pct)%")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.4)
+                        .foregroundStyle(status.fg)
+                }
+
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(AppTheme.Colors.surfaceMuted)
+                        Capsule()
+                            .fill(status.fg)
+                            .frame(width: max(0, geo.size.width * progress))
+                    }
+                }
+                .frame(height: 4)
+            }
+            .padding(.top, AppTheme.Spacing.xl)
+        }
+        .padding(.horizontal, 22)
+        .padding(.top, 22)
+        .padding(.bottom, 24)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(AppTheme.Colors.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.xl, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: AppTheme.Radius.xl, style: .continuous)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .stroke(AppTheme.Colors.border, lineWidth: 0.5)
         )
+        .shadow(color: .black.opacity(0.04), radius: 2, x: 0, y: 1)
+        .shadow(color: .black.opacity(0.03), radius: 8, x: 0, y: 2)
     }
 }
 

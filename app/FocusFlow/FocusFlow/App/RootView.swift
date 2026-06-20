@@ -1,6 +1,10 @@
 import SwiftUI
 
 struct RootView: View {
+    
+    @AppStorage("appearance") private var appearance: AppAppearance = .system
+    @AppStorage("appLanguage") private var language: AppLanguage = .system
+    
     var body: some View {
         TabView {
             TodayView()
@@ -22,8 +26,11 @@ struct RootView: View {
                 .tabItem {
                     Label("Settings", systemImage: "gearshape")
                 }
+            
         }
         .tint(AppTheme.Colors.accent)
+        .preferredColorScheme(appearance.colorScheme)
+        .environment(\.locale, language.locale ?? .current)
     }
 }
 

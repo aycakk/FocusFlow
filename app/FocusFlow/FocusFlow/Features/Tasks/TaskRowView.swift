@@ -7,6 +7,12 @@ struct TaskRowView: View {
     let onComplete: () -> Void
     let onSelect: () -> Void
 
+    @Environment(\.locale) private var locale
+
+    // Local "leaving" animation so completing/restoring feels smooth
+    // even though the List itself is driven by @Query.
+    @State private var isLeaving = false
+
     var body: some View {
         HStack(alignment: .center, spacing: AppTheme.Spacing.md) {
             checkboxButton
@@ -17,12 +23,23 @@ struct TaskRowView: View {
         .padding(.vertical, 6)
         .contentShape(Rectangle())
         .onTapGesture { onSelect() }
+        .opacity(isLeaving ? 0 : 1)
+        .scaleEffect(isLeaving ? 0.94 : 1, anchor: .leading)
+        .blur(radius: isLeaving ? 2 : 0)
+    }
+
+    /// Fades/shrinks the row, then performs the action.
+    private func leave(_ action: @escaping () -> Void) {
+        withAnimation(.easeOut(duration: 0.3)) { isLeaving = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            action()
+        }
     }
 
     // MARK: - Checkbox (green when done)
 
     private var checkboxButton: some View {
-        Button(action: onComplete) {
+        Button { leave(onComplete) } label: {
             ZStack {
                 Circle()
                     .fill(task.status == .done ? AppTheme.Colors.success : Color.clear)
@@ -47,7 +64,7 @@ struct TaskRowView: View {
 
     private var taskContent: some View {
         Text(task.title)
-            .font(AppTheme.Typography.body)
+            .font(.system(size: 16, weight: .regular))
             .foregroundStyle(task.status == .done ? AppTheme.Colors.tertiaryText : AppTheme.Colors.primaryText)
             .strikethrough(task.status == .done, color: AppTheme.Colors.tertiaryText)
             .lineLimit(2)
@@ -55,21 +72,30 @@ struct TaskRowView: View {
 
     // MARK: - Meta badge (date or time estimate)
 
+    // Only show a badge when it adds information the section header doesn't.
     @ViewBuilder
     private var metaBadge: some View {
-        if let date = task.scheduledDate, task.status == .scheduled {
-            Text(date.formatted(.dateTime.month(.abbreviated).day()))
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(AppTheme.Colors.warning)
-                .padding(.horizontal, AppTheme.Spacing.sm)
-                .padding(.vertical, 4)
-                .background(AppTheme.Colors.warningSoft)
-                .clipShape(Capsule())
+        if task.isInTodayFocus && task.status != .done {
+            badge(Text("TODAY"), bg: AppTheme.Colors.accentSoft, fg: AppTheme.Colors.accent)
+        } else if task.status == .scheduled, let date = task.scheduledDate {
+            badge(Text(date.formatted(.dateTime.weekday(.abbreviated).locale(locale)).uppercased()),
+                  bg: AppTheme.Colors.warningSoft, fg: AppTheme.Colors.warning)
         } else if let minutes = task.estimatedMinutes {
             Text("\(minutes) min")
                 .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(AppTheme.Colors.tertiaryText)
         }
+    }
+
+    private func badge(_ text: Text, bg: Color, fg: Color) -> some View {
+        text
+            .font(.system(size: 11, weight: .semibold))
+            .tracking(0.3)
+            .foregroundStyle(fg)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(bg)
+            .clipShape(Capsule())
     }
 }
 

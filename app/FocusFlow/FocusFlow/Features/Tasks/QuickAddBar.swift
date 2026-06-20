@@ -33,15 +33,18 @@ struct QuickAddBar: View {
                     text = ""
                 }
 
-            // Keyboard shortcut hint (hidden when focused)
-            if !isFocused {
-                Text("⌘ N")
-                    .font(.system(size: 10.5, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(AppTheme.Colors.tertiaryText)
-                    .padding(.horizontal, AppTheme.Spacing.sm)
-                    .padding(.vertical, 3)
-                    .background(AppTheme.Colors.surfaceMuted)
-                    .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+            // Submit button — appears only when there's something to add
+            if !text.trimmingCharacters(in: .whitespaces).isEmpty {
+                Button {
+                    onSubmit()
+                    text = ""
+                } label: {
+                    Image(systemName: "arrow.up.circle.fill")
+                        .font(.system(size: 26))
+                        .foregroundStyle(AppTheme.Colors.accent)
+                }
+                .buttonStyle(.plain)
+                .transition(.scale.combined(with: .opacity))
             }
         }
         .padding(.horizontal, AppTheme.Spacing.lg)

@@ -24,10 +24,9 @@ struct TodayView: View {
         allTasks.filter { $0.isInTodayFocus }
     }
 
-    /// Active focus tasks — not done — maximum 3 shown
+    /// Active focus tasks — not done. Shows all of today's focus.
     private var activeTasks: [TaskItem] {
-        let active = focusTasks.filter { $0.status != .done && $0.status != .deferred }
-        return Array(active.prefix(3))
+        focusTasks.filter { $0.status != .done && $0.status != .deferred }
     }
 
     /// Focus tasks that have been completed today
@@ -103,7 +102,7 @@ struct TodayView: View {
 
             // Summary — "2 focuses remaining · 1 done"
             Text(viewModel.summary(
-                total: min(focusTasks.count, 3),
+                total: focusTasks.count,
                 done: doneTasks.count
             ))
             .font(.system(size: 14))

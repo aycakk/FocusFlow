@@ -10,17 +10,24 @@ struct TasksView: View {
 
     @State private var selectedTask: TaskItem? = nil
     @State private var newTaskText = ""
+    @State private var showCompleted = false
 
     // MARK: - Filters (sorted by manual sortOrder)
 
+    // Manual buckets exclude goal tasks (those live in their own section).
     private var inboxTasks: [TaskItem] {
-        allTasks.filter { $0.status == .inbox }.sorted { $0.sortOrder < $1.sortOrder }
+        allTasks.filter { $0.status == .inbox && $0.goal == nil }.sorted { $0.sortOrder < $1.sortOrder }
     }
     private var scheduledTasks: [TaskItem] {
-        allTasks.filter { $0.status == .scheduled }.sorted { $0.sortOrder < $1.sortOrder }
+        allTasks.filter { $0.status == .scheduled && $0.goal == nil }.sorted { $0.sortOrder < $1.sortOrder }
     }
     private var somedayTasks: [TaskItem] {
-        allTasks.filter { $0.status == .someday || $0.status == .deferred }
+        allTasks.filter { ($0.status == .someday || $0.status == .deferred) && $0.goal == nil }
+            .sorted { $0.sortOrder < $1.sortOrder }
+    }
+    /// Active tasks that belong to a goal — kept in their own section.
+    private var goalTasks: [TaskItem] {
+        allTasks.filter { $0.goal != nil && $0.status != .done }
             .sorted { $0.sortOrder < $1.sortOrder }
     }
     private var completedTasks: [TaskItem] {
@@ -35,14 +42,20 @@ struct TasksView: View {
             headerSection
                 .padding(.horizontal, AppTheme.Spacing.xxl)
 
-            List {
-                reorderableSection("Inbox", inboxTasks)
-                reorderableSection("Scheduled", scheduledTasks)
-                reorderableSection("Someday", somedayTasks)
-                completedSection
+            if allTasks.isEmpty {
+                emptyState
+            } else {
+                List {
+                    reorderableSection("Inbox", inboxTasks)
+                    reorderableSection("Scheduled", scheduledTasks)
+                    reorderableSection("Someday", somedayTasks)
+                    reorderableSection("From Goals", goalTasks)
+                    completedSection
+                }
+                .listStyle(.insetGrouped)
+                .listSectionSpacing(16)
+                .scrollContentBackground(.hidden)
             }
-            .listStyle(.insetGrouped)
-            .scrollContentBackground(.hidden)
         }
         .background(AppTheme.Colors.background)
         .safeAreaInset(edge: .bottom) {
@@ -74,30 +87,63 @@ struct TasksView: View {
         .padding(.bottom, AppTheme.Spacing.lg)
     }
 
+    // MARK: - Empty State
+
+    private var emptyState: some View {
+        VStack(spacing: AppTheme.Spacing.md) {
+            Spacer()
+            Image(systemName: "checklist")
+                .font(.system(size: 44, weight: .light))
+                .foregroundStyle(AppTheme.Colors.tertiaryText)
+            Text("No tasks yet")
+                .font(AppTheme.Typography.headline)
+                .foregroundStyle(AppTheme.Colors.primaryText)
+            Text("Add your first task below.")
+                .font(AppTheme.Typography.body)
+                .foregroundStyle(AppTheme.Colors.secondaryText)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    /// Runs a mutating action inside a calm spring so list rows
+    /// move/insert/remove smoothly instead of snapping away.
+    private func animated(_ action: () -> Void) {
+        withAnimation(.spring(response: 0.32, dampingFraction: 0.82)) {
+            action()
+        }
+    }
+
     // MARK: - Reorderable Section (Inbox / Scheduled / Someday)
 
     @ViewBuilder
-    private func reorderableSection(_ title: String, _ tasks: [TaskItem]) -> some View {
+    private func reorderableSection(_ title: LocalizedStringKey, _ tasks: [TaskItem]) -> some View {
         if !tasks.isEmpty {
             Section {
                 ForEach(tasks) { task in
                     TaskRowView(
                         task: task,
-                        onComplete: { viewModel.completeTask(task, context: context) },
+                        onComplete: { animated { viewModel.completeTask(task, context: context) } },
                         onSelect: { selectedTask = task }
                     )
                     .listRowBackground(AppTheme.Colors.cardBackground)
+                    .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 12, trailing: 20))
                     .swipeActions(edge: .leading) {
                         Button {
-                            viewModel.completeTask(task, context: context)
+                            animated { viewModel.completeTask(task, context: context) }
                         } label: {
                             Label("Done", systemImage: "checkmark")
                         }
                         .tint(AppTheme.Colors.success)
                     }
                     .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            animated { viewModel.deleteTask(task, context: context) }
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
                         Button {
-                            viewModel.deferTask(task, context: context)
+                            animated { viewModel.deferTask(task, context: context) }
                         } label: {
                             Label("Someday", systemImage: "archivebox")
                         }
@@ -115,34 +161,59 @@ struct TasksView: View {
 
     // MARK: - Completed Section
 
+    // Collapsible — keeps the list short. Collapsed by default.
     @ViewBuilder
     private var completedSection: some View {
         if !completedTasks.isEmpty {
             Section {
-                ForEach(completedTasks) { task in
-                    TaskRowView(
-                        task: task,
-                        onComplete: { viewModel.uncompleteTask(task, context: context) },
-                        onSelect: { selectedTask = task }
-                    )
-                    .listRowBackground(AppTheme.Colors.cardBackground)
-                    .swipeActions(edge: .trailing) {
-                        Button {
-                            viewModel.uncompleteTask(task, context: context)
-                        } label: {
-                            Label("Restore", systemImage: "arrow.uturn.backward")
+                if showCompleted {
+                    ForEach(completedTasks) { task in
+                        TaskRowView(
+                            task: task,
+                            onComplete: { animated { viewModel.uncompleteTask(task, context: context) } },
+                            onSelect: { selectedTask = task }
+                        )
+                        .listRowBackground(AppTheme.Colors.cardBackground)
+                        .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 12, trailing: 20))
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                animated { viewModel.deleteTask(task, context: context) }
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                            Button {
+                                animated { viewModel.uncompleteTask(task, context: context) }
+                            } label: {
+                                Label("Restore", systemImage: "arrow.uturn.backward")
+                            }
+                            .tint(AppTheme.Colors.accent)
                         }
-                        .tint(AppTheme.Colors.accent)
                     }
                 }
             } header: {
-                sectionHeader("Completed")
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) { showCompleted.toggle() }
+                } label: {
+                    HStack(spacing: 6) {
+                        sectionHeader("Completed")
+                        Text("\(completedTasks.count)")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(AppTheme.Colors.tertiaryText)
+                        Spacer()
+                        Image(systemName: showCompleted ? "chevron.down" : "chevron.right")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(AppTheme.Colors.tertiaryText)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
         }
     }
 
-    private func sectionHeader(_ title: String) -> some View {
-        Text(title.uppercased())
+    private func sectionHeader(_ title: LocalizedStringKey) -> some View {
+        Text(title)
+            .textCase(.uppercase)
             .font(AppTheme.Typography.eyebrow)
             .tracking(AppTheme.Typography.Tracking.eyebrow)
             .foregroundStyle(AppTheme.Colors.tertiaryText)

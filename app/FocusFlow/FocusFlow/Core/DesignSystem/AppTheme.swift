@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 enum AppTheme {
 
@@ -6,36 +7,37 @@ enum AppTheme {
     enum Colors {
 
         // Backgrounds
-        static let background       = Color(hex: "#F7F8FA") // light grey-white
-        static let backgroundSoft   = Color(hex: "#EDE9E3") // warm tint (kept for future use)
-        static let backgroundMuted  = Color(hex: "#E4DFD8") // warm tint 2
-        static let cardBackground   = Color(hex: "#FFFFFF")
-        static let surfaceMuted     = Color(hex: "#F1F3F6") // tracks, hairline fills
+        static let background       = Color(light: "#F7F8FA", dark: "#121417")
+        static let backgroundSoft   = Color(light: "#EDE9E3", dark: "#1A1D21")
+        static let backgroundMuted  = Color(light: "#E4DFD8", dark: "#22262B")
+        static let cardBackground   = Color(light: "#FFFFFF", dark: "#1C1F24")
+        static let surfaceMuted     = Color(light: "#F1F3F6", dark: "#272B31")
 
-        // Accent — cobalt blue
-        static let accent           = Color(hex: "#2A6FDB")
-        static let accentStrong     = Color(hex: "#1B57C2") // darker cobalt
-        static let accentSoft       = Color(hex: "#E8EFFB") // tinted fill
-        static let accentMid        = Color(hex: "#C5D0FF") // mid tint (kept)
+        // Accent — cobalt blue (slightly brighter in dark for contrast)
+        static let accent           = Color(light: "#2A6FDB", dark: "#5C93F0")
+        static let accentStrong     = Color(light: "#1B57C2", dark: "#4C8DFF")
+        static let accentSoft        = Color(light: "#E8EFFB", dark: "#1E2A40")
+        static let accentMid        = Color(light: "#C5D0FF", dark: "#2E3A52")
 
         // Text scale
-        static let primaryText      = Color(hex: "#0E1116")
-        static let secondaryText    = Color(hex: "#525866")
-        static let tertiaryText     = Color(hex: "#858C99")
-        static let quaternaryText   = Color(hex: "#C2BFB8") // kept for future
+        static let primaryText      = Color(light: "#0E1116", dark: "#F2F4F7")
+        static let secondaryText    = Color(light: "#525866", dark: "#A8AEB8")
+        static let tertiaryText     = Color(light: "#858C99", dark: "#6E7681")
+        static let quaternaryText   = Color(light: "#C2BFB8", dark: "#4A4F57")
 
         // Semantic
-        static let success          = Color(hex: "#2E8F66")
-        static let successSoft      = Color(hex: "#E4F2EC")
-        static let warning          = Color(hex: "#B8780C")
-        static let warningSoft      = Color(hex: "#FBF1DC")
-        static let danger           = Color(hex: "#D04A3B")
-        static let dangerSoft       = Color(hex: "#FDEDF0")
+        static let success          = Color(light: "#2E8F66", dark: "#3FB985")
+        static let successSoft      = Color(light: "#E4F2EC", dark: "#16271F")
+        static let warning          = Color(light: "#B8780C", dark: "#E0A23A")
+        static let warningSoft      = Color(light: "#FBF1DC", dark: "#2E2512")
+        static let danger           = Color(light: "#D04A3B", dark: "#F0685A")
+        static let dangerSoft       = Color(light: "#FDEDF0", dark: "#2E1A1C")
 
-        // Borders — base is primaryText (#0E1116)
-        static let border           = Color(hex: "#0E1116").opacity(0.08)
-        static let borderStrong     = Color(hex: "#0E1116").opacity(0.12)
+        // Borders — black in light, white in dark, both very faint
+        static let border           = Color(light: "#0E1116", dark: "#FFFFFF").opacity(0.08)
+        static let borderStrong     = Color(light: "#0E1116", dark: "#FFFFFF").opacity(0.14)
     }
+    
 
     // MARK: - Typography
     enum Typography {
@@ -93,5 +95,15 @@ extension Color {
         let green = Double((rgb >> 8)  & 0xFF) / 255
         let blue  = Double(rgb & 0xFF)          / 255
         self.init(red: red, green: green, blue: blue)
+    }
+}
+
+// MARK: - Adaptive color (light / dark)
+extension Color {
+    /// Picks the light or dark hex automatically based on the color scheme.
+    init(light: String, dark: String) {
+        self = Color(UIColor { traits in
+            UIColor(traits.userInterfaceStyle == .dark ? Color(hex: dark) : Color(hex: light))
+        })
     }
 }
