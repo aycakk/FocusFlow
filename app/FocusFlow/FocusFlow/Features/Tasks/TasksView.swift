@@ -106,6 +106,14 @@ struct TasksView: View {
         .frame(maxWidth: .infinity)
     }
 
+    /// Runs a mutating action inside a calm spring so list rows
+    /// move/insert/remove smoothly instead of snapping away.
+    private func animated(_ action: () -> Void) {
+        withAnimation(.spring(response: 0.32, dampingFraction: 0.82)) {
+            action()
+        }
+    }
+
     // MARK: - Reorderable Section (Inbox / Scheduled / Someday)
 
     @ViewBuilder
@@ -115,14 +123,14 @@ struct TasksView: View {
                 ForEach(tasks) { task in
                     TaskRowView(
                         task: task,
-                        onComplete: { viewModel.completeTask(task, context: context) },
+                        onComplete: { animated { viewModel.completeTask(task, context: context) } },
                         onSelect: { selectedTask = task }
                     )
                     .listRowBackground(AppTheme.Colors.cardBackground)
                     .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 12, trailing: 20))
                     .swipeActions(edge: .leading) {
                         Button {
-                            viewModel.completeTask(task, context: context)
+                            animated { viewModel.completeTask(task, context: context) }
                         } label: {
                             Label("Done", systemImage: "checkmark")
                         }
@@ -130,12 +138,12 @@ struct TasksView: View {
                     }
                     .swipeActions(edge: .trailing) {
                         Button(role: .destructive) {
-                            viewModel.deleteTask(task, context: context)
+                            animated { viewModel.deleteTask(task, context: context) }
                         } label: {
                             Label("Delete", systemImage: "trash")
                         }
                         Button {
-                            viewModel.deferTask(task, context: context)
+                            animated { viewModel.deferTask(task, context: context) }
                         } label: {
                             Label("Someday", systemImage: "archivebox")
                         }
@@ -162,19 +170,19 @@ struct TasksView: View {
                     ForEach(completedTasks) { task in
                         TaskRowView(
                             task: task,
-                            onComplete: { viewModel.uncompleteTask(task, context: context) },
+                            onComplete: { animated { viewModel.uncompleteTask(task, context: context) } },
                             onSelect: { selectedTask = task }
                         )
                         .listRowBackground(AppTheme.Colors.cardBackground)
                         .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 12, trailing: 20))
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
-                                viewModel.deleteTask(task, context: context)
+                                animated { viewModel.deleteTask(task, context: context) }
                             } label: {
                                 Label("Delete", systemImage: "trash")
                             }
                             Button {
-                                viewModel.uncompleteTask(task, context: context)
+                                animated { viewModel.uncompleteTask(task, context: context) }
                             } label: {
                                 Label("Restore", systemImage: "arrow.uturn.backward")
                             }

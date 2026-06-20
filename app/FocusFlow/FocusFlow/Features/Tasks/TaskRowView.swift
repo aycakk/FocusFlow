@@ -9,6 +9,10 @@ struct TaskRowView: View {
 
     @Environment(\.locale) private var locale
 
+    // Local "leaving" animation so completing/restoring feels smooth
+    // even though the List itself is driven by @Query.
+    @State private var isLeaving = false
+
     var body: some View {
         HStack(alignment: .center, spacing: AppTheme.Spacing.md) {
             checkboxButton
@@ -19,12 +23,23 @@ struct TaskRowView: View {
         .padding(.vertical, 6)
         .contentShape(Rectangle())
         .onTapGesture { onSelect() }
+        .opacity(isLeaving ? 0 : 1)
+        .scaleEffect(isLeaving ? 0.94 : 1, anchor: .leading)
+        .blur(radius: isLeaving ? 2 : 0)
+    }
+
+    /// Fades/shrinks the row, then performs the action.
+    private func leave(_ action: @escaping () -> Void) {
+        withAnimation(.easeOut(duration: 0.3)) { isLeaving = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            action()
+        }
     }
 
     // MARK: - Checkbox (green when done)
 
     private var checkboxButton: some View {
-        Button(action: onComplete) {
+        Button { leave(onComplete) } label: {
             ZStack {
                 Circle()
                     .fill(task.status == .done ? AppTheme.Colors.success : Color.clear)
