@@ -13,6 +13,22 @@ Not a productivity system. A calm companion for doing meaningful work, one day a
 
 ---
 
+## Screenshots
+
+<div align="center">
+
+| Today | Tasks | Goals |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/today.png" width="240"> | <img src="docs/screenshots/tasks.png" width="240"> | <img src="docs/screenshots/goals.png" width="240"> |
+
+| AI Planning | Dark Mode |
+|:---:|:---:|
+| <img src="docs/screenshots/planning.png" width="240"> | <img src="docs/screenshots/dark-mode.png" width="240"> |
+
+</div>
+
+---
+
 ## Why FocusFlow
 
 Most planning apps shout. Streaks, badges, dashboards, agile jargon. FocusFlow does the opposite.
